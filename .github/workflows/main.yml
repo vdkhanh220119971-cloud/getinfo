@@ -1,0 +1,35 @@
+name: Build Dynamic Library
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Cho phép bấm nút "Run workflow" thủ công trên GitHub
+
+jobs:
+  build-dylib:
+    runs-on: macos-latest
+
+    steps:
+      # Bước 1: Lấy mã nguồn từ Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Bước 2: Biên dịch file Objective-C (.m) thành .dylib cho iOS (arm64)
+      - name: Compile Objective-C to .dylib
+        run: |
+          clang -dynamiclib \
+            -arch arm64 \
+            -isysroot $(xcrun --sdk iphoneos --show-sdk-path) \
+            -miphoneos-version-min=14.0 \
+            -fobjc-arc \
+            -framework Foundation \
+            MyLibrary.m -o MyLibrary.dylib
+
+      # Bước 3: Lưu file .dylib thành Artifact để tải về
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyLibrary-arm64
+          path: MyLibrary.dylib
