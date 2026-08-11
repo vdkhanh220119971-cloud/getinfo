@@ -1,14 +1,23 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+// ============================================================================
+// INTERFACE (Khai báo Class và các Phương thức)
+// ============================================================================
 @interface MyLibrary : NSObject
+
 + (instancetype)sharedManager;
 - (void)postNewOrderEvent:(NSDictionary *)orderInfo;
 - (void)listenForOrdersInViewController:(UIViewController *)viewController;
+
 @end
 
+// ============================================================================
+// IMPLEMENTATION (Thực thi chi tiết)
+// ============================================================================
 @implementation MyLibrary
 
+// Singleton Pattern để dùng chung 1 instance trong ứng dụng
 + (instancetype)sharedManager {
     static MyLibrary *shared = nil;
     static dispatch_once_t onceToken;
@@ -18,7 +27,7 @@
     return shared;
 }
 
-// Phát sự kiện khi có dữ liệu mới trong ứng dụng
+// Hàm phát sự kiện đơn hàng mới
 - (void)postNewOrderEvent:(NSDictionary *)orderInfo {
     if (!orderInfo) return;
     
@@ -29,19 +38,24 @@
     });
 }
 
-// Lắng nghe sự kiện và hiển thị thông báo lên giao diện
+// Hàm đăng ký lắng nghe và hiển thị Alert thông báo lên màn hình
 - (void)listenForOrdersInViewController:(UIViewController *)viewController {
+    if (!viewController) return;
+
     [[NSNotificationCenter defaultCenter] addObserverForName:@"AppDidReceiveNewOrderNotification"
                                                       object:nil
                                                        queue:[NSOperationQueue mainQueue]
                                                   usingBlock:^(NSNotification * _Nonnull note) {
         NSDictionary *orderData = note.userInfo;
-        NSString *message = [NSString stringWithFormat:@"Đã nhận đơn hàng: %@", orderData[@"id"] ?: @"Mới"];
+        NSString *orderId = orderData[@"id"] ? [NSString stringWithFormat:@"%@", orderData[@"id"]] : @"Mới";
+        NSString *message = [NSString stringWithFormat:@"Đã nhận đơn hàng số: %@", orderId];
         
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Thông Báo"
+        // Hiển thị Alert trên UI
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Thông Báo Đơn Hàng"
                                                                        message:message
                                                                 preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+        
+        [alert addAction:[UIAlertAction actionWithTitle:@"Đóng" style:UIAlertActionStyleDefault handler:nil]];
         
         [viewController presentViewController:alert animated:YES completion:nil];
     }];
