@@ -8,7 +8,7 @@ on:
   workflow_dispatch: # Cho phép bấm nút "Run workflow" thủ công trên GitHub
 
 jobs:
-  build-dylib:
+  build-dylib: 
     runs-on: macos-latest
 
     steps:
